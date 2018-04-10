@@ -53,5 +53,5 @@ void MainWindow::socketReadData()
 
 void MainWindow::socketDisconnected()
 {
-    qDebug() << "Disconnected!";
+    qDebug() << "A Client Disconnected!";
 }
