@@ -18,7 +18,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void sendData();
-
+    void sleep(unsigned int mSec);
 
 public slots:
     void startSendData();

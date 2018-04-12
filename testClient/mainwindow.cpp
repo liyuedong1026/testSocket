@@ -2,6 +2,12 @@
 #include "ui_mainwindow.h"
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QTime>
+#include <QWaitCondition>
+// 200KB/S
+#define MAX_SPEED  (200*1024)
+// 每一次4KB,一秒200KB,每20ms发送一次,timer间隔20ms
+#define TIME_INTERVAL (20)
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -48,12 +54,27 @@ void MainWindow::sendData()
     qDebug("size = %lld", m_filesize);
     qint64 len = 0;
     do {
+        QTime startTime = QTime::currentTime();
         char buf[4*1024] = {0};
         len = 0;
         len = m_file.read(buf,sizeof(buf));
         len = m_client->write(buf,len);
         m_sendsize += len;
+        QTime stopTime = QTime::currentTime();
+        int elapsed = startTime.msecsTo(stopTime);
+        qDebug("sendData ms %d size %d", elapsed, m_sendsize);
+        if (elapsed<TIME_INTERVAL) {
+            sleep(TIME_INTERVAL-elapsed);
+        }
     } while(len > 0);
+}
+
+void MainWindow::sleep(unsigned int mSec)
+{
+    QTime dieTime = QTime::currentTime().addMSecs(mSec);
+    while( QTime::currentTime() < dieTime ) {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    }
 }
 
 void MainWindow::startSendData()
